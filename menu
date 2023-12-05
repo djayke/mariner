@@ -1,0 +1,118 @@
+#!/bin/bash
+
+dir=$(pwd)
+current_pos=0
+
+# color
+BLACK="\e[30m"
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+BLUE="\e[34m"
+MAGENTA="\e[35m"
+CYAN="\e[36m"
+WHITE="\e[97m"
+ENDCOLOR="\e[0m"
+
+BGBLACK="\e[40m"
+BGRED="\e[41m"
+BGGREEN="\e[42m"
+BGYELLOW="\e[43m"
+BGBLUE="\e[44m"
+BGMAGENTA="\e[45m"
+BGCYAN="\e[46m"
+BGWHITE="\e[107m"
+
+display()
+{
+	clear
+	counter=0
+	
+	#margin up
+	if [ $current_pos -lt 0 ]; then current_pos=0; fi
+
+	for file in *; do
+	    if [ $counter -eq $current_pos ]; then
+	       echo -e "${BLACK} ${BGWHITE} $file ${ENDCOLOR}"
+	    
+	    elif [ -d "$file" ]; then
+	       echo -e "${CYAN} $file ${ENDCOLOR}"
+	    
+	    elif [ -f "$file" ]; then
+	       echo -e "${YELLOW} $file ${ENDCOLOR}"
+	    fi
+	    counter=$((counter+1))
+	done
+	
+	#margin down
+	if [ $current_pos -gt $counter ]; then current_pos=$((counter-1)); fi
+	
+	
+}
+
+isDirectory()
+{
+	counter=0
+	for file in *; do
+	    if [ $counter -eq $current_pos ]; then
+	    	if [ -d "$file" ]; then
+	    		cd "$file"
+	    		dir=$(pwd)
+	    		current_pos=0
+	    		display
+	    	fi
+	    fi
+	    counter=$((counter+1))
+	done
+}
+
+backward()
+{
+	cd ..
+	dir=$(pwd)
+	current_pos=0
+	display
+}
+
+
+end()
+{
+	cd "$dir"
+	return 0
+}
+
+read_input()
+{
+	q=1
+	while [ $q -ne 0 ] # Forever = until ctrl+c
+	do
+	    # r: backslash is not for escape
+	    # s: silent
+	    # "n x": read x chars before returning
+	    read -rsn 1 t
+	    echo "$t"
+	    case $t in
+		A) current_pos=$((current_pos-1)) && display ;;
+		B) current_pos=$((current_pos+1)) && display ;;
+		C) isDirectory ;;
+		D) backward ;;
+		q) end && return 0;;
+	    esac
+	done
+}
+
+
+
+loop()
+{
+	while true; do
+		clear
+		display
+		read_input
+		return 0
+	done
+}
+
+loop
+
+
